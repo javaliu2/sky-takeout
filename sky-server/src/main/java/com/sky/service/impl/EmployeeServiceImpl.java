@@ -3,6 +3,7 @@ package com.sky.service.impl;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.PasswordConstant;
 import com.sky.constant.StatusConstant;
+import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.entity.Employee;
@@ -74,9 +75,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         newEmployee.setCreateTime(LocalDateTime.now());
         newEmployee.setUpdateTime(LocalDateTime.now());
 //        newEmployee.setId(1);  // 不用设置，因为id是由数据库在管理维护的，这也减少了业务代码的复杂度，体现了功能分层的思想
-        // TODO 后面需要获取当前进行员工注册操作人的id
-        newEmployee.setCreateUser(10L);  // 需要追加'L'以表明这是long数据类型的数
-        newEmployee.setUpdateUser(10L);
+//        newEmployee.setCreateUser(10L);  // 需要追加'L'以表明这是long数据类型的数
+//        newEmployee.setUpdateUser(10L);
+        // 通过ThreadLocal设置线程级别变量，获取当前进行员工注册操作人的id
+        newEmployee.setCreateUser(BaseContext.getCurrentId());
+        newEmployee.setUpdateUser(BaseContext.getCurrentId());
 
         newEmployee.setStatus(StatusConstant.ENABLE);  // 将常量提取出来管理，便于后期维护
         newEmployee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));  // 同理
