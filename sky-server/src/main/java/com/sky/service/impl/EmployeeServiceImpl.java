@@ -109,4 +109,18 @@ public class EmployeeServiceImpl implements EmployeeService {
         List<Employee> records = data.getResult();
         return new PageResult(total, records);
     }
+
+    /**
+     * 启用或者禁用员工 逻辑实现
+     * @param status
+     * @param id
+     */
+    @Override
+    public void startOrStop(Integer status, Long id) {
+        // 对应的sql语句为 update employee set status = ? where id = ?
+        // 考虑到别的功能也涉及到employee表的更新，因此这里对Employee进行更新
+        // 使用<set>标签设置非空，即需要更新的字段为新的值
+        Employee employee = Employee.builder().status(status).id(id).build();
+        employeeMapper.update(employee);
+    }
 }

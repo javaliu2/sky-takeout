@@ -18,9 +18,9 @@ public class Employee implements Serializable {
 
     private Long id;
 
-    private String username;
+    private String username;  // 用户名
 
-    private String name;
+    private String name;  // 员工姓名
 
     private String password;
 
@@ -28,7 +28,7 @@ public class Employee implements Serializable {
 
     private String sex;
 
-    private String idNumber;
+    private String idNumber;  // 身份证号
 
     private Integer status;
 
