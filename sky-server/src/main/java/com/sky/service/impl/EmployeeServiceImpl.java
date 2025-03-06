@@ -77,14 +77,15 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee newEmployee = new Employee();
         BeanUtils.copyProperties(employeeDTO, newEmployee);
         // 对 Employee 的其他属性进行赋值
-        newEmployee.setCreateTime(LocalDateTime.now());
-        newEmployee.setUpdateTime(LocalDateTime.now());
+        // 由于对公共字段进行统一赋值操作，因此这里不需要进行处理
+//  1      newEmployee.setCreateTime(LocalDateTime.now());
+//  2     newEmployee.setUpdateTime(LocalDateTime.now());
 //        newEmployee.setId(1);  // 不用设置，因为id是由数据库在管理维护的，这也减少了业务代码的复杂度，体现了功能分层的思想
 //        newEmployee.setCreateUser(10L);  // 需要追加'L'以表明这是long数据类型的数
 //        newEmployee.setUpdateUser(10L);
         // 通过ThreadLocal设置线程级别变量，获取当前进行员工注册操作人的id
-        newEmployee.setCreateUser(BaseContext.getCurrentId());
-        newEmployee.setUpdateUser(BaseContext.getCurrentId());
+//  3     newEmployee.setCreateUser(BaseContext.getCurrentId());
+//  4     newEmployee.setUpdateUser(BaseContext.getCurrentId());
 
         newEmployee.setStatus(StatusConstant.ENABLE);  // 将常量提取出来管理，便于后期维护
         newEmployee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));  // 同理
@@ -145,8 +146,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
 
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setUpdateUser(BaseContext.getCurrentId());
+//        employee.setUpdateTime(LocalDateTime.now());
+//        employee.setUpdateUser(BaseContext.getCurrentId());
 
         employeeMapper.update(employee);
     }
