@@ -37,3 +37,8 @@ sky:
     admin-ttl: 7200000
     # 设置前端传递过来的令牌名称
     admin-token-name: token
+  alioss:
+    endpoint: ${sky.alioss.endpoint}  # 发现这是占位符，所以去dev.yml或prod.yml文件中去找值
+    access-key-id: ${sky.alioss.access-key-id}
+    access-key-secret: ${sky.alioss.access-key-secret}
+    bucket-name: ${sky.alioss.bucket-name}
