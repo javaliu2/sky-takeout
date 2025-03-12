@@ -17,7 +17,7 @@ public class Result<T> implements Serializable {
 
     /**
      * 静态方法的加载先于类的实例化，因此静态方法无法使用类上声明的泛型参数值
-     * 需要自己声明参数
+     * 需要自己声明参数，实例方法不用
      * @return
      * @param <T>
      */

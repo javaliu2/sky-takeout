@@ -5,6 +5,8 @@ import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.result.PageResult;
 
+import java.util.List;
+
 public interface DishService {
     /**
      * 保存菜品及其口味数据
@@ -18,4 +20,5 @@ public interface DishService {
      */
     PageResult pageQuery(DishPageQueryDTO dishPageQueryDTO);
 
+    void batchDelete(List<Long> ids);
 }

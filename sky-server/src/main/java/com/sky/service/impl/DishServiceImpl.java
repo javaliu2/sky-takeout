@@ -2,22 +2,28 @@ package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
+import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
+import com.sky.mapper.SetmealDishMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class DishServiceImpl implements DishService {
@@ -26,6 +32,8 @@ public class DishServiceImpl implements DishService {
     private DishMapper dishMapper;
     @Autowired
     private DishFlavorMapper dishFlavorMapper;
+    @Autowired
+    private SetmealDishMapper setmealDishMapper;
 
     @Transactional
     public void saveWithFlavor(DishDTO dishDTO) {
@@ -55,5 +63,37 @@ public class DishServiceImpl implements DishService {
         PageHelper.startPage(dishPageQueryDTO.getPage(),dishPageQueryDTO.getPageSize());
         Page<DishVO> page = dishMapper.pageQuery(dishPageQueryDTO);
         return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 批量删除菜品业务【实现】
+     * @param ids
+     */
+    public void batchDelete(List<Long> ids) {
+        // 1、是否停售
+        // 逐一处理
+        for (long id : ids) {
+            // my implementation
+//            Integer status = dishMapper.queryStatus(id);  // 2）根据id查询Dish吧，这样具备可重用性
+//            log.debug("id={}, status={}", id, status);
+//            if (Objects.equals(status, StatusConstant.ENABLE)) {
+//                return MessageConstant.DISH_ON_SALE;  // 1）通过抛异常的方式提醒前端, 而不是向controller返回数据
+//            }
+            Dish dish = dishMapper.getDishById(id);
+            if (Objects.equals(dish.getStatus(), StatusConstant.ENABLE)) {
+                throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE); // 提醒前端，原理是什么?
+                // 通过GlobalExceptionHandler进行处理，将异常信息返回给前端
+            }
+        }
+        // 2、是否被某一个套餐包含
+        List<Long> setmealIds = setmealDishMapper.getSetmealIdsByDishIds(ids);
+        if (setmealIds != null && setmealIds.size() > 0) {
+            throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
+        }
+        // 3、删除菜品以其关联的口味数据
+        for (Long id : ids) {
+            dishMapper.deleteById(id);
+            dishFlavorMapper.deleteByDishId(id);
+        }
     }
 }

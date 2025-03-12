@@ -49,4 +49,20 @@ public class DishController {
         PageResult pageResult = dishService.pageQuery(dishPageQueryDTO);
         return Result.success(pageResult);
     }
+
+    /**
+     * 批量删除菜品
+     * @return
+     */
+    @DeleteMapping()
+    @ApiOperation("批量删除菜品")
+    public Result delete(@RequestParam List<Long> ids) {
+        // 前端请求参数 ...?ids=1,2,3
+        // 通过@RequestParam, SpringBoot自动解析该值然后封装到List<Long>类型的参数中
+        // dish表中菜品ID字段类型是bigint, 刚好对应Java中的long类型数值范围（有符号的情况下）
+        // 如果bigint设置为无符号，那么需要在Java中使用BigInteger来映射
+        log.info("批量删除菜品，菜品id：{}", ids);
+        dishService.batchDelete(ids);
+        return Result.success();
+    }
 }
