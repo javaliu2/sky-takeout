@@ -67,8 +67,10 @@ public class DishServiceImpl implements DishService {
 
     /**
      * 批量删除菜品业务【实现】
+     * 操作了两张表，因此加 @Transactional注解以保证数据一致性
      * @param ids
      */
+    @Transactional
     public void batchDelete(List<Long> ids) {
         // 1、是否停售
         // 逐一处理
@@ -91,9 +93,13 @@ public class DishServiceImpl implements DishService {
             throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
         }
         // 3、删除菜品以其关联的口味数据
-        for (Long id : ids) {
-            dishMapper.deleteById(id);
-            dishFlavorMapper.deleteByDishId(id);
-        }
+        // 以下代码可能会产生多次数据库操作，降低效率
+//        for (Long id : ids) {
+//            dishMapper.deleteById(id);
+//            dishFlavorMapper.deleteByDishId(id);
+//        }
+        // 优化：使用in语句进行批量删除
+        dishMapper.deleteByIds(ids);
+        dishFlavorMapper.deleteByDishIds(ids);
     }
 }
