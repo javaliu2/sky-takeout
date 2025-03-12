@@ -65,4 +65,18 @@ public class DishController {
         dishService.batchDelete(ids);
         return Result.success();
     }
+
+    /**
+     * 根据id决定起售或停售该菜品
+     * @param status
+     * @param id
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("起售或停售菜品")
+    public Result saleOrHalt(@PathVariable Integer status, Long id) {
+        log.info("将id为{}的菜品状态置为{}", id, status);
+        dishService.saleOrHalt(id, status);
+        return Result.success();
+    }
 }

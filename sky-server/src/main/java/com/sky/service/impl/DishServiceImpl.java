@@ -102,4 +102,10 @@ public class DishServiceImpl implements DishService {
         dishMapper.deleteByIds(ids);
         dishFlavorMapper.deleteByDishIds(ids);
     }
+
+    public void saleOrHalt(Long id, Integer status) {
+        // 仿照EmployeeServiceImpl代码
+        Dish dish = Dish.builder().status(status).id(id).build();
+        dishMapper.update(dish);
+    }
 }

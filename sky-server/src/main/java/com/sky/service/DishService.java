@@ -21,4 +21,6 @@ public interface DishService {
     PageResult pageQuery(DishPageQueryDTO dishPageQueryDTO);
 
     void batchDelete(List<Long> ids);
+
+    void saleOrHalt(Long id, Integer status);
 }
