@@ -15,6 +15,12 @@ public class Result<T> implements Serializable {
     private String msg; //错误信息
     private T data; //数据
 
+    /**
+     * 静态方法的加载先于类的实例化，因此静态方法无法使用类上声明的泛型参数值
+     * 需要自己声明参数
+     * @return
+     * @param <T>
+     */
     public static <T> Result<T> success() {
         Result<T> result = new Result<T>();
         result.code = 1;
@@ -34,5 +40,4 @@ public class Result<T> implements Serializable {
         result.code = 0;
         return result;
     }
-
 }

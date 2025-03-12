@@ -16,9 +16,9 @@ import java.io.IOException;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/admin/common")
 @Slf4j
 @Api("公共接口")
-@RequestMapping("/admin/common")
 public class CommonController {
 
     @Autowired
