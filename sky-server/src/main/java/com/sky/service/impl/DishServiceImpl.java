@@ -108,4 +108,35 @@ public class DishServiceImpl implements DishService {
         Dish dish = Dish.builder().status(status).id(id).build();
         dishMapper.update(dish);
     }
+
+    public DishVO getByIdWithFlavor(Long id) {
+        // 查询菜品数据
+        Dish dish = dishMapper.getDishById(id);
+        // 查询该菜品关联的口味数据
+        List<DishFlavor> dishFlavors = dishFlavorMapper.getByDishId(id);
+        // 将以上数据封装为VO对象返回
+        DishVO dishVO = new DishVO();
+        BeanUtils.copyProperties(dish, dishVO);
+        dishVO.setFlavors(dishFlavors);
+        return dishVO;
+    }
+
+    @Override
+    public void updateWithFlavor(DishDTO dishDTO) {
+        Dish dish = new Dish();
+        BeanUtils.copyProperties(dishDTO, dish);
+        dishMapper.update(dish);
+        Long dishId = dish.getId();
+        dishFlavorMapper.deleteByDishId(dishId);
+        List<DishFlavor> flavors = dishDTO.getFlavors();
+        // 前端传递的flavors，如果是新增的口味，那么它的id和dishId属性为null
+        // 如果是已经有的的口味，那么它的这两个属性是从数据库查询出来的
+        // 所以还是需要对dishId属性重新赋值才不至于dishId属性为null
+        if (flavors != null && flavors.size() > 0) {
+            flavors.forEach(flavor -> {
+                flavor.setDishId(dishId);
+            });
+            dishFlavorMapper.insertBatch(flavors);
+        }
+    }
 }

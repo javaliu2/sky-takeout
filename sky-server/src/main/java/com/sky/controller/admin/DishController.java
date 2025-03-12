@@ -7,6 +7,7 @@ import com.sky.entity.DishFlavor;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.DishService;
+import com.sky.vo.DishVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -77,6 +78,22 @@ public class DishController {
     public Result saleOrHalt(@PathVariable Integer status, Long id) {
         log.info("将id为{}的菜品状态置为{}", id, status);
         dishService.saleOrHalt(id, status);
+        return Result.success();
+    }
+
+    @GetMapping("/{id}")
+    @ApiOperation("查询菜品数据")
+    public Result<DishVO> getById(@PathVariable Long id) {
+        log.info("根据id:{}查询菜品数据", id);
+        DishVO dishVO = dishService.getByIdWithFlavor(id);
+        return Result.success(dishVO);
+    }
+
+    @PutMapping
+    @ApiOperation("修改菜品数据")
+    public Result update(@RequestBody DishDTO dishDTO) {
+        log.info("修改菜品数据：{}", dishDTO);
+        dishService.updateWithFlavor(dishDTO);
         return Result.success();
     }
 }

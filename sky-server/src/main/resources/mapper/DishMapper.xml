@@ -24,13 +24,13 @@
                 status = #{status},
             </if>
             <if test="price != null">
-                price = #{price}
+                price = #{price},
             </if>
             <if test="image != null">
-                image = #{image}
+                image = #{image},
             </if>
             <if test="description != null">
-                description = #{description}
+                description = #{description},
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
