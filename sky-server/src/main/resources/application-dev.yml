@@ -11,3 +11,7 @@ sky:
     access-key-id: LTAI5tKf7JNVTw6VDJsvAgTN
     access-key-secret: uFqqYU8K3gfWVVcWj9cglaFDQvPp7B
     bucket-name: sky-takeout-xs
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
