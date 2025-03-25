@@ -57,4 +57,12 @@ public interface DishMapper {
 
     @AutoFill(OperationType.UPDATE)
     void update(Dish dish);
+
+    /**
+     * 查询分类id下的所有菜品（售卖状态）
+     * 他这边用的对象传递参数，搞得我很迷
+     * @param dish
+     * @return
+     */
+    List<Dish> list(Dish dish);
 }
