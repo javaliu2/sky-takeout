@@ -19,6 +19,7 @@ public class Setmeal implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    // 数据库表中该条记录对应的主键
     private Long id;
 
     //分类id

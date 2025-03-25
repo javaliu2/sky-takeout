@@ -1,6 +1,8 @@
 package com.sky.mapper;
 
+import com.sky.annotation.AutoFill;
 import com.sky.entity.Setmeal;
+import com.sky.enumeration.OperationType;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import com.sky.vo.DishItemVO;
@@ -34,4 +36,11 @@ public interface SetmealMapper {
             "where sd.setmeal_id = #{setmealId}")
     List<DishItemVO> getDishItemBySetmealId(Long setmealId);
 
+    /**
+     * 新增套餐功能实现的数据库操作部分
+     * 使用自定义注解完成公共字段的赋值
+     * @param setmeal
+     */
+    @AutoFill(OperationType.INSERT)
+    void insert(Setmeal setmeal);
 }
