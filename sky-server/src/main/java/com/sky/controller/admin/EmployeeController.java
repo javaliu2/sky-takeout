@@ -140,4 +140,12 @@ public class EmployeeController {
         employeeService.update(employeeDTO);
         return Result.success();
     }
+
+    /**
+     * 未实现
+     * @return
+     */
+    public Result editPassword() {
+        return Result.success();
+    }
 }
