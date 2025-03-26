@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 套餐业务实现
@@ -89,5 +90,83 @@ public class SetmealServiceImpl implements SetmealService {
         try (Page<SetmealVO> page = setmealMapper.pageQuery(setmealPageQueryDTO)) {
             return new PageResult(page.getTotal(), page.getResult());
         }
+    }
+
+    /**
+     * 根据套餐id返回该套餐信息，包括其包含的菜品【功能实现】
+     * @param id
+     * @return
+     */
+    public SetmealVO getSetmealByIdWithDish(Long id) {
+        // 首先获取套餐信息
+        Setmeal setmeal = setmealMapper.getSetmealById(id);
+        // 获取套餐关联的菜品信息
+        List<SetmealDish> setmealDishes = setmealDishMapper.getDishOfSetmealById(id);
+        SetmealVO setmealVO = new SetmealVO();
+        BeanUtils.copyProperties(setmeal, setmealVO);
+        setmealVO.setSetmealDishes(setmealDishes);
+        return setmealVO;
+    }
+
+    /**
+     * 根据DTO对象更新套餐数据【功能实现】
+     * @param setmealDTO
+     */
+    public void updateSetmealWithDish(SetmealDTO setmealDTO) {
+        // 1、更新 套餐表 数据
+        Setmeal setmeal = new Setmeal();
+        BeanUtils.copyProperties(setmealDTO, setmeal);
+        setmealMapper.update(setmeal);
+        // 2、更新 套餐菜品关系表 数据
+        // 2.1 实现策略：首先删除该套餐所有数据，然后插入新的数据
+        Long setmealId = setmeal.getId();
+        setmealDishMapper.deleteBySetmealId(setmealId);
+        List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
+        if (setmealDishes != null && setmealDishes.size() > 0) {
+            setmealDishes.forEach(setmealDish -> {
+                setmealDish.setSetmealId(setmealId);
+            });
+            setmealDishMapper.insertBatch(setmealDishes);
+        }
+    }
+
+    /**
+     * 将主键为id的套餐状态修改为status【功能实现】
+     * @param id
+     * @param status
+     */
+    public void editStatus(Long id, Integer status) {
+        // 起售的时候需要判断是否包括停售的菜品，如果有的话，抛异常提醒前端
+        if (status == StatusConstant.ENABLE) {
+            List<Dish> dishes = dishMapper.getBySetmealId(id);
+            if (dishes != null && dishes.size() > 0) {
+                dishes.forEach(dish -> {
+                        if (StatusConstant.DISABLE == dish.getStatus()) {
+                            throw new SetmealEnableFailedException(MessageConstant.SETMEAL_ENABLE_FAILED);
+                        }
+                    }
+                );
+            }
+        }
+        Setmeal setmeal = Setmeal.builder().status(status).id(id).build();
+        setmealMapper.update(setmeal);
+    }
+
+    /**
+     * 删除主键为ids的套餐数据【功能实现】
+     * @param ids
+     */
+    public void batchDelete(List<Long> ids){
+        // 1、判断其售卖状态是否为 停售
+        // 非停售（即售卖状态）不可删除，通过抛异常的方式提醒前端
+        for (Long id : ids) {
+            Setmeal setmeal = setmealMapper.getSetmealById(id);
+            if (Objects.equals(setmeal.getStatus(), StatusConstant.ENABLE)) {
+                throw new DeletionNotAllowedException(MessageConstant.SETMEAL_ON_SALE);
+            }
+        }
+        // 2、批量删除套餐（操作套餐表）及其包含菜品（操作套餐菜品表）
+        setmealMapper.deleteByIds(ids);
+        setmealDishMapper.deleteBySetmealIds(ids);
     }
 }

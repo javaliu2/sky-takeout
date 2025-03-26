@@ -53,4 +53,24 @@ public interface SetmealMapper {
      * @return
      */
     Page<SetmealVO> pageQuery(SetmealPageQueryDTO setmealPageQueryDTO);
+
+    /**
+     * 根据套餐id返回其属性【数据库查询接口】
+     * @param id
+     * @return
+     */
+    Setmeal getSetmealById(Long id);
+
+    /**
+     * 更新套餐表
+     * @param setmeal
+     */
+    @AutoFill(OperationType.UPDATE)
+    void update(Setmeal setmeal);
+
+    /**
+     * 批量删除主键为ids的套餐
+     * @param ids
+     */
+    void deleteByIds(List<Long> ids);
 }
