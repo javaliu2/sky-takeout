@@ -10,7 +10,7 @@
     <select id="list" parameterType="Setmeal" resultType="Setmeal">
         select * from setmeal
         <where>
-            <if test="name != null">
+            <if test="name != null and name != ''">
                 and name like concat('%',#{name},'%')
             </if>
             <if test="categoryId != null">
@@ -20,5 +20,20 @@
                 and status = #{status}
             </if>
         </where>
+    </select>
+    <select id="pageQuery" resultType="com.sky.vo.SetmealVO">
+        select sm.*, c.name as categoryName from setmeal sm left outer join category c on sm.category_id = c.id
+        <where>
+            <if test="name != null and name != ''">
+                and sm.name like concat('%', #{name}, '%')
+            </if>
+            <if test="categoryId != null">
+                and category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                and sm.status = #{status}
+            </if>
+        </where>
+        order by create_time desc
     </select>
 </mapper>

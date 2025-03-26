@@ -78,4 +78,16 @@ public class SetmealServiceImpl implements SetmealService {
         // 调用setmeal_dish mapper的批量新增方法
         setmealDishMapper.insertBatch(setmealDishes);
     }
+
+    public PageResult pageQuery(SetmealPageQueryDTO setmealPageQueryDTO) {
+        PageHelper.startPage(setmealPageQueryDTO.getPage(), setmealPageQueryDTO.getPageSize());
+        // 返回SetmealVO对象，其中包含分类名称，这需要到category表中进行查找
+        // 同时包含该套餐下的所有菜品，这涉及到setmeal_dish表的查找
+        // 又看了一下接口文档，这里返回的数据不包括菜品，只有套餐相关信息
+        // 但是SetmealVO对象中是有套餐菜品关系属性的setmealDishes
+        // finally，按照接口来
+        try (Page<SetmealVO> page = setmealMapper.pageQuery(setmealPageQueryDTO)) {
+            return new PageResult(page.getTotal(), page.getResult());
+        }
+    }
 }
