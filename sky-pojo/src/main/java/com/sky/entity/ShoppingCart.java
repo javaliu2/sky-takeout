@@ -20,9 +20,10 @@ public class ShoppingCart implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    // 数据库表主键
     private Long id;
 
-    //名称
+    //菜品或者套餐名称
     private String name;
 
     //用户id
@@ -43,7 +44,7 @@ public class ShoppingCart implements Serializable {
     //金额
     private BigDecimal amount;
 
-    //图片
+    //图片保存路径
     private String image;
 
     private LocalDateTime createTime;
