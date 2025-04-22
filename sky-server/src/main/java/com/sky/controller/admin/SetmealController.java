@@ -9,6 +9,7 @@ import com.sky.service.SetmealService;
 import com.sky.vo.SetmealVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,8 @@ public class SetmealController {
      * @return
      */
     @PostMapping
+    // 删除该套餐所在分类的缓存数据
+    @CacheEvict(cacheNames = "setmealCache", key="#setmealDTO.categoryId")
     public Result addSetmeal(@RequestBody SetmealDTO setmealDTO) {
         log.info("新增套餐，SetmealDTO：{}", setmealDTO);
         setmealService.addSetmeal(setmealDTO);
@@ -63,6 +66,8 @@ public class SetmealController {
      * @return
      */
     @PutMapping
+    // 删除所有分类的缓存数据
+    @CacheEvict(cacheNames = "setmealCache", allEntries = true)
     public Result update(@RequestBody SetmealDTO setmealDTO) {
         log.info("更新套餐数据，新数据：{}", setmealDTO);
         setmealService.updateSetmealWithDish(setmealDTO);
@@ -76,6 +81,7 @@ public class SetmealController {
      * @return
      */
     @PostMapping("/status/{status}")
+    @CacheEvict(cacheNames = "setmealCache", allEntries = true)
     public Result editStatus(@PathVariable Integer status, Long id) {
         log.info("将主键为{}的套餐状态修改为{}", id, status);
         setmealService.editStatus(id, status);
@@ -88,6 +94,7 @@ public class SetmealController {
      * @return
      */
     @DeleteMapping
+    @CacheEvict(cacheNames = "setmealCache", allEntries = true)
     public Result batchDelete(@RequestParam List<Long> ids) {
         log.info("删除主键为{}的套餐数据", ids);
         setmealService.batchDelete(ids);
