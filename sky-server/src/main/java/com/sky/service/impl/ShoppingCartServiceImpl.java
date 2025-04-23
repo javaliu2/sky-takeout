@@ -47,7 +47,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             ShoppingCart cart = list.get(0);
             // 将商品数量加一
             cart.setNumber(cart.getNumber() + 1);
-            shoppingCartMapper.increaseNumberById(cart);
+            shoppingCartMapper.updateNumberById(cart);
         } else {
             // 将商品加入购物车，更新数据库表
             // 判断是菜品还是套餐
@@ -98,9 +98,24 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
      * @param shoppingCartDTO
      */
     public void subtractOne(ShoppingCartDTO shoppingCartDTO) {
-//        Long userId = BaseContext.getCurrentId();
-//        ShoppingCart shoppingCart = shoppingCartMapper.getByUserId(userId);
-//        BeanUtils.copyProperties(shoppingCartDTO, shoppingCart);
-//        shoppingCartMapper.update(shoppingCart);
+        ShoppingCart shoppingCart = new ShoppingCart();
+        Long userId = BaseContext.getCurrentId();
+        shoppingCart.setUserId(userId);
+        BeanUtils.copyProperties(shoppingCartDTO, shoppingCart);
+        // 根据用户id和商品id（菜品id或者套餐id）查询数据库得到该商品的所有信息
+        // 还是可以用mapper.list，无非这里查询到的数据只有一条
+        List<ShoppingCart> list = shoppingCartMapper.list(shoppingCart);
+        // list一定不为空且size为1，因为这是将商品数量减1，该商品一定存在于购物车
+        ShoppingCart cart = list.get(0);
+        Integer number = cart.getNumber();
+        if (number - 1 == 0) {
+            // 从购物车中将该商品清除
+            // 套餐通过用户id和套餐id唯一确定；菜品除了用户id和菜品id以外还需要口味，因为相同菜品不同口味的话是两个商品
+            // 忽略了主键唯一确定一条商品，因此只根据主键就可以完成删除或者数量减1的操作
+            shoppingCartMapper.removeOne(cart);
+        } else {
+            cart.setNumber(number - 1);
+            shoppingCartMapper.updateNumberById(cart);
+        }
     }
 }

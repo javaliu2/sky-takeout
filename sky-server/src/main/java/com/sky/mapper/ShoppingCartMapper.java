@@ -12,10 +12,21 @@ public interface ShoppingCartMapper {
     List<ShoppingCart> list(ShoppingCart shoppingCart);
 
     @Update("update shopping_cart set number=#{number} where id=#{id}")
-    void increaseNumberById(ShoppingCart cart);
+    void updateNumberById(ShoppingCart cart);
 
     void insert(ShoppingCart shoppingCart);
 
+    /**
+     * 从购物车中移除当前用户的所有商品
+     * @param shoppingCart
+     */
     @Delete("delete from shopping_cart where user_id=#{userId}")
     void clean(ShoppingCart shoppingCart);
+
+    /**
+     * 从购物车中移除一个商品
+     * @param shoppingCart
+     */
+    @Delete("delete from shopping_cart where id=#{id}")
+    void removeOne(ShoppingCart shoppingCart);
 }
