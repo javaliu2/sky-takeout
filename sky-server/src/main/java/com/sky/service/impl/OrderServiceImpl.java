@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
@@ -14,6 +15,7 @@ import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.websocket.WebSocketServer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -38,6 +42,9 @@ public class OrderServiceImpl implements OrderService {
     private UserMapper userMapper;
     @Autowired
     private WeChatPayUtil weChatPayUtil;
+    @Autowired
+    private WebSocketServer webSocketServer;
+
     public OrderSubmitVO orderSubmit(OrdersSubmitDTO ordersSubmitDTO) {
         // 1、业务异常判断（前端已经对提交来的数据进行了判断，这里进行第二次判断的原因是提高系统鲁棒性，当使用postman方式提交数据时系统也能够正常响应，不至于宕机）
         // 1.1、地址簿是否为空
@@ -144,6 +151,29 @@ public class OrderServiceImpl implements OrderService {
                 .checkoutTime(LocalDateTime.now())
                 .build();
 
+        // 向商家端推送消息提醒
+        Map<String, Object> data = new HashMap<>();
+        data.put("type", 1); // 1表示来单提醒；2表示客户催单
+        data.put("orderId", ordersDB.getId());
+        data.put("content", "订单号：" + outTradeNo);
+        webSocketServer.sendToAllClient(JSON.toJSONString(data));  // 通过websocket与client通信
+
         orderMapper.update(orders);
+    }
+
+    /**
+     * 客户催单【功能实现】
+     * @param id
+     */
+    public void reminder(Long id) {
+        Orders order = orderMapper.getById(id);
+        if (order == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("type", 2); // 客户催单
+        data.put("orderId", id);
+        data.put("content", "订单号：" + order.getNumber());
+        webSocketServer.sendToAllClient(JSON.toJSONString(data));
     }
 }
