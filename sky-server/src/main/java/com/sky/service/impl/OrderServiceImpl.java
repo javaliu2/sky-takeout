@@ -6,9 +6,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
@@ -249,5 +247,24 @@ public class OrderServiceImpl implements OrderService {
             shoppingCart.setCreateTime(LocalDateTime.now());
             shoppingCartMapper.insert(shoppingCart);
         }
+    }
+
+    /**
+     * 服务端确认接单【功能实现】
+     * @param ordersConfirmDTO
+     */
+    public void confirmOrder(OrdersConfirmDTO ordersConfirmDTO) {
+        Orders order = orderMapper.getById(ordersConfirmDTO.getId());
+        order.setStatus(Orders.CONFIRMED);
+        orderMapper.update(order);
+    }
+
+    @Override
+    public void rejectOrder(OrdersRejectionDTO ordersRejectionDTO) {
+        Orders order = orderMapper.getById(ordersRejectionDTO.getId());
+        order.setStatus(Orders.CANCELLED);
+        order.setCancelTime(LocalDateTime.now());
+        order.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+        orderMapper.update(order);
     }
 }
