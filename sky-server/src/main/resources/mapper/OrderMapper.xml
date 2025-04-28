@@ -43,4 +43,94 @@
         </set>
         where id = #{id}
     </update>
+
+    <resultMap id="orderVOResultMap" type="com.sky.vo.OrderVO">
+        <!-- 映射订单基础字段 -->
+        <id column="id" property="id"/>
+        <result column="number" property="number"/>
+        <result column="status" property="status"/>
+        <result column="user_id" property="userId"/>
+        <result column="address_book_id" property="addressBookId"/>
+        <result column="order_time" property="orderTime"/>
+        <result column="checkout_time" property="checkoutTime"/>
+        <result column="pay_method" property="payMethod"/>
+        <result column="pay_status" property="payStatus"/>
+        <result column="amount" property="amount"/>
+        <result column="remark" property="remark"/>
+        <result column="user_name" property="userName"/>
+        <result column="phone" property="phone"/>
+        <result column="address" property="address"/>
+        <result column="consignee" property="consignee"/>
+        <result column="cancel_reason" property="cancelReason"/>
+        <result column="rejection_reason" property="rejectionReason"/>
+        <result column="cancel_time" property="cancelTime"/>
+        <result column="estimated_delivery_time" property="estimatedDeliveryTime"/>
+        <result column="delivery_status" property="deliveryStatus"/>
+        <result column="delivery_time" property="deliveryTime"/>
+        <result column="pack_amount" property="packAmount"/>
+        <result column="tableware_number" property="tablewareNumber"/>
+        <result column="tableware_status" property="tablewareStatus"/>
+
+        <!-- 特别的: 映射orderDishes -->
+        <result column="order_dishes" property="orderDishes"/>
+
+        <!-- 特别的: 把子查询结果塞进orderDetailList -->
+        <collection property="orderDetailList" ofType="com.sky.entity.OrderDetail"
+                    select="getOrderDetailsByOrderId" column="id"/>
+    </resultMap>
+
+    <!-- 分页查询订单（带动态条件） -->
+    <select id="pageQuery" resultMap="orderVOResultMap">
+        SELECT o.*,
+        (SELECT GROUP_CONCAT(
+        CONCAT(
+        CASE
+        WHEN d.name IS NOT NULL THEN d.name
+        WHEN s.name IS NOT NULL THEN s.name
+        ELSE '未知'
+        END,
+        'x',
+        od.number))
+        FROM order_detail od
+        LEFT JOIN dish d ON od.dish_id = d.id
+        LEFT JOIN setmeal s ON od.setmeal_id = s.id
+        WHERE od.order_id = o.id
+        ) AS order_dishes
+        FROM orders o
+        <where>
+            <!-- 动态根据订单号模糊查询 -->
+            <if test="number != null and number != ''">
+                AND o.number LIKE CONCAT('%', #{number}, '%')
+            </if>
+
+            <if test="phone != null and phone != ''">
+                AND o.phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+
+            <!-- 动态根据订单状态筛选 -->
+            <if test="status != null">
+                AND o.status = #{status}
+            </if>
+
+            <!-- 动态根据时间区间筛选 -->
+            <if test="beginTime != null">
+                AND o.order_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                AND o.order_time &lt;= #{endTime}
+            </if>
+
+            <!-- 动态根据用户ID筛选 -->
+            <if test="userId != null">
+                AND o.user_id = #{userId}
+            </if>
+        </where>
+        ORDER BY o.order_time DESC
+    </select>
+
+    <!-- 查询订单对应的全部订单明细 -->
+    <select id="getOrderDetailsByOrderId" resultType="com.sky.entity.OrderDetail">
+        SELECT * FROM order_detail WHERE order_id = #{orderId}
+    </select>
+
 </mapper>

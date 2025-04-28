@@ -1,13 +1,18 @@
 package com.sky.controller.user;
 
 import com.alibaba.fastjson.JSON;
+import com.sky.dto.DishPageQueryDTO;
+import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
+import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.vo.OrderVO;
 import com.sky.websocket.WebSocketServer;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +64,7 @@ public class OrderController {
     }
 
     /**
-     * 客户催单
+     * 客户催单【逻辑控制】
      * @param id
      * @return
      */
@@ -67,5 +72,53 @@ public class OrderController {
     public Result reminder(@PathVariable("id") Long id) {
         orderService.reminder(id);
         return  Result.success();
+    }
+
+    /**
+     * 根据订单id获取订单信息【逻辑控制】
+     * @param id
+     * @return
+     */
+    @GetMapping("/orderDetail/{id}")
+    public Result<OrderVO> getOrderDetail(@PathVariable("id") Long id) {
+        log.info("获取id为{}的订单详情", id);
+        OrderVO data = orderService.getOrderDetail(id);
+        return Result.success(data);
+    }
+
+    /**
+     * 查询历史订单【逻辑控制】
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    @GetMapping("/historyOrders")
+    public Result<PageResult> pageQuery(OrdersPageQueryDTO ordersPageQueryDTO) {
+        log.info("查询所有订单：{}", ordersPageQueryDTO);
+        PageResult pageResult = orderService.pageQuery(ordersPageQueryDTO);
+        return Result.success(pageResult);
+    }
+
+    /**
+     * 根据id取消订单【逻辑控制】
+     * @param id
+     * @return
+     */
+    @PutMapping("/cancel/{id}")
+    public Result<String> cancelOrder(@PathVariable("id") Long id) {
+        log.info("取消id为{}的订单", id);
+        orderService.cancelOrder(id);
+        return Result.success("取消成功");
+    }
+
+    /**
+     * 再来一单
+     * @param id
+     * @return
+     */
+    @PostMapping("/repetition/{id}")
+    public Result oneMore(@PathVariable("id") Long id) {
+        log.info("再来一单id为{}的商品", id);
+        orderService.oneMore(id);
+        return Result.success();
     }
 }
