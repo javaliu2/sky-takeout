@@ -1,10 +1,7 @@
 package com.sky.controller.user;
 
 import com.alibaba.fastjson.JSON;
-import com.sky.dto.DishPageQueryDTO;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
@@ -106,7 +103,10 @@ public class OrderController {
     @PutMapping("/cancel/{id}")
     public Result<String> cancelOrder(@PathVariable("id") Long id) {
         log.info("取消id为{}的订单", id);
-        orderService.cancelOrder(id);
+        OrdersCancelDTO ordersCancelDTO = new OrdersCancelDTO();
+        ordersCancelDTO.setCancelReason("客户主动取消");
+        ordersCancelDTO.setId(id);
+        orderService.cancelOrder(ordersCancelDTO);
         return Result.success("取消成功");
     }
 

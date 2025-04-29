@@ -15,14 +15,12 @@ import com.sky.mapper.*;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
-import com.sky.vo.DishVO;
-import com.sky.vo.OrderPaymentVO;
-import com.sky.vo.OrderSubmitVO;
-import com.sky.vo.OrderVO;
+import com.sky.vo.*;
 import com.sky.websocket.WebSocketServer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -188,6 +186,7 @@ public class OrderServiceImpl implements OrderService {
      * @param id
      * @return
      */
+    @Transactional
     public OrderVO getOrderDetail(Long id) {
         OrderVO orderVO = new OrderVO();
         // 查询orders表获取订单数据
@@ -198,7 +197,10 @@ public class OrderServiceImpl implements OrderService {
         orderVO.setOrderDetailList(orderDetailList);
         StringBuilder sb = new StringBuilder();
         for (OrderDetail detail : orderDetailList) {
-            sb.append(detail.getName()).append(", ");
+            sb.append(detail.getName()).append("*").append(detail.getNumber()).append(", ");
+        }
+        if (sb.length() >= 2) {
+            sb.delete(sb.length() - 2, sb.length());
         }
         orderVO.setOrderDishes(sb.toString());
         return orderVO;
@@ -219,13 +221,12 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 根据id取消订单【功能实现】
      *
-     * @param id
      */
-    public void cancelOrder(Long id) {
+    public void cancelOrder(OrdersCancelDTO ordersCancelDTO) {
         Orders order = Orders.builder()
-                .id(id)
+                .id(ordersCancelDTO.getId())
                 .status(Orders.CANCELLED)
-                .cancelReason("用户主动取消")
+                .cancelReason(ordersCancelDTO.getCancelReason())
                 .cancelTime(LocalDateTime.now())
                 .build();
         orderMapper.update(order);
@@ -266,5 +267,39 @@ public class OrderServiceImpl implements OrderService {
         order.setCancelTime(LocalDateTime.now());
         order.setRejectionReason(ordersRejectionDTO.getRejectionReason());
         orderMapper.update(order);
+    }
+
+    /**
+     * 派送订单【功能实现】
+     * @param id
+     */
+    public void deliveryOrder(Long id) {
+        // 只修改订单状态为'派送中'，属性deliveryStatus和deliveryTime先不管
+        Orders order = orderMapper.getById(id);
+        order.setStatus(Orders.DELIVERY_IN_PROGRESS);
+        orderMapper.update(order);
+    }
+
+    /**
+     * 完成订单【功能实现】
+     * @param id
+     */
+    public void completeOrder(Long id) {
+        // 修改订单状态为'已完成'
+        Orders order = orderMapper.getById(id);
+        order.setStatus(Orders.COMPLETED);
+        orderMapper.update(order);
+    }
+
+    /**
+     * 统计订单数量【功能实现】
+     * @return
+     */
+    public OrderStatisticsVO orderStatistics() {
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+        orderStatisticsVO.setToBeConfirmed(orderMapper.getStatusCount(Orders.TO_BE_CONFIRMED));
+        orderStatisticsVO.setConfirmed(orderMapper.getStatusCount(Orders.CONFIRMED));
+        orderStatisticsVO.setDeliveryInProgress(orderMapper.getStatusCount(Orders.DELIVERY_IN_PROGRESS));
+        return orderStatisticsVO;
     }
 }
