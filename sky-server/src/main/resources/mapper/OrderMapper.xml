@@ -133,4 +133,39 @@
         SELECT * FROM order_detail WHERE order_id = #{orderId}
     </select>
 
+    <select id="getDailyTurnover" resultType="java.lang.Double">
+        select sum(amount) from orders
+        <where>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="beginTime != null">
+                and order_time &gt; #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and order_time &lt; #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDailyOrderCount" resultType="java.lang.Integer">
+        select count(*) from orders
+        <where>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="beginTime != null">
+                and order_time &gt; #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and order_time &lt; #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="getVaildOrderCountWithCheckoutTime" resultType="java.lang.Long">
+        SELECT id FROM orders
+        WHERE checkout_time BETWEEN #{beginTime} AND #{endTime}
+    </select>
+
 </mapper>

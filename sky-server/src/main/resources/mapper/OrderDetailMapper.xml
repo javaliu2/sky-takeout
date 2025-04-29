@@ -11,4 +11,16 @@
             (#{od.name}, #{od.image}, #{od.orderId}, #{od.dishId}, #{od.setmealId}, #{od.dishFlavor}, #{od.amount}, #{od.number})
         </foreach>
     </insert>
+
+    <select id="getTop10SalesCount" resultType="java.util.Map">
+        SELECT name, SUM(number) AS num
+        FROM order_detail
+        WHERE order_id IN
+        <foreach collection="orderIdList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        GROUP BY name
+        ORDER BY num DESC
+        LIMIT 10
+    </select>
 </mapper>
