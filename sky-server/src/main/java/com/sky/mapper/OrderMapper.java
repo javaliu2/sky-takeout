@@ -50,4 +50,7 @@ public interface OrderMapper {
 
     List<Long> getVaildOrderCountWithCheckoutTime(LocalDateTime beginTime, LocalDateTime endTime);
 
+    Integer countByMap(Map map);
+
+    Double sumByMap(Map map);
 }

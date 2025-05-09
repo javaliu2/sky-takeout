@@ -17,4 +17,6 @@ public interface UserMapper {
     User getById(Long userId);
 
     Integer getUserCount(Map<String, Object> param);
+
+    Integer countByMap(Map map);
 }
