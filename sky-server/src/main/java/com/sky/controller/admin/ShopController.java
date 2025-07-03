@@ -24,7 +24,7 @@ public class ShopController {
     }
 
     @GetMapping("/status")
-    public Result<Integer> setStatus() {
+    public Result<Integer> getStatus() {
         Integer status = (Integer) redisTemplate.opsForValue().get(KEY);
         // Context: 前端登录店铺，他会自动获取店铺状态，但是现在Redis中没有保存状态数据
         // 获取到的status是null对象，报错：

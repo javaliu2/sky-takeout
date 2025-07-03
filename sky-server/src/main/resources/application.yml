@@ -16,6 +16,7 @@ spring:
     host: ${sky.redis.host}
     port: ${sky.redis.port}
     database: ${sky.redis.database}  # 一共有16个数据库(编号0至15)，彼此之间数据独立
+    password: ${sky.redis.password}
 
 mybatis:
   #mapper配置文件
