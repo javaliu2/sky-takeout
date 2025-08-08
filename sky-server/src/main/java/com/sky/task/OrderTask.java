@@ -25,12 +25,13 @@ public class OrderTask {
 
         LocalDateTime time = LocalDateTime.now().minusMinutes(15);
         List<Orders> ordersList = orderMapper.getByStatusAndOrdertimeLT(Orders.PENDING_PAYMENT, time);
+        // 查询出来ordersList，但是这时候发生线程调度，用户完成支付，订单状态为已支付，在我们的业务系统中是（数字2，TO_BE_CONFIRMED，待接单）
         if (ordersList != null && ordersList.size() > 0) {
             ordersList.forEach(order -> {
                 order.setStatus(Orders.CANCELLED);
                 order.setCancelReason("支付超时，自动取消");
                 order.setCancelTime(LocalDateTime.now());
-                orderMapper.update(order);
+                orderMapper.update(order);  // 更新的时候，要带上version判定和订单状态判定（只取消处于PENDING_PAYMENT状态的订单）
             });
         }
     }

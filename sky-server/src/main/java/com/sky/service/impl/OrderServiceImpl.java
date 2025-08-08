@@ -160,7 +160,7 @@ public class OrderServiceImpl implements OrderService {
         data.put("content", "订单号：" + outTradeNo);
         webSocketServer.sendToAllClient(JSON.toJSONString(data));  // 通过websocket与client通信
 
-        orderMapper.update(orders);
+        orderMapper.update(orders);  // 这里更新也是，判定version和订单状态（是否是PENDING_PAYMENT状态）
     }
 
     /**
