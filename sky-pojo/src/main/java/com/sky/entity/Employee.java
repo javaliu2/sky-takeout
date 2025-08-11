@@ -42,4 +42,6 @@ public class Employee implements Serializable {
 
     private Long updateUser;
 
+    private Long version;  // CAS乐观锁-版本号
+
 }

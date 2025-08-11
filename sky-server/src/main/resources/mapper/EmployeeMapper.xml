@@ -13,6 +13,48 @@
         order by create_time desc
     </select>
 
+    <update id="updateWithCAS">
+        update employee
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="username != null">
+                username = #{username},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="idNumber != null">
+                id_number = #{idNumber},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="updateUser != null">
+                update_user = #{updateUser},
+            </if>
+<!--            <if test="version != null">-->
+<!--                version = #{version} + 1,  &lt;!&ndash; 版本號加一,错误示例，因为#{version}不能算数运算 &ndash;&gt;-->
+<!--            </if>-->
+            version = version + 1  <!-- raw sql update -->
+        </set>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="version != null">
+                and version = #{version}
+            </if>
+        </where>
+    </update>
+
     <update id="update">
         update employee
         <set>
@@ -41,7 +83,8 @@
                 update_user = #{updateUser},
             </if>
         </set>
-        where id = #{id}
+        where
+        id = #{id}
     </update>
 
 </mapper>
