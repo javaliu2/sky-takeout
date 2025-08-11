@@ -44,6 +44,48 @@
         where id = #{id}
     </update>
 
+    <update id="updateWithVersion" parameterType="com.sky.entity.Orders">
+        update orders
+        <set>
+            <if test="order.cancelReason != null and order.cancelReason!='' ">
+                cancel_reason=#{order.cancelReason},
+            </if>
+            <if test="order.rejectionReason != null and order.rejectionReason!='' ">
+                rejection_reason=#{order.rejectionReason},
+            </if>
+            <if test="order.cancelTime != null">
+                cancel_time=#{order.cancelTime},
+            </if>
+            <if test="order.payStatus != null">
+                pay_status=#{order.payStatus},
+            </if>
+            <if test="order.payMethod != null">
+                pay_method=#{order.payMethod},
+            </if>
+            <if test="order.checkoutTime != null">
+                checkout_time=#{order.checkoutTime},
+            </if>
+            <if test="order.status != null">
+                status = #{order.status},
+            </if>
+            <if test="order.deliveryTime != null">
+                delivery_time = #{order.deliveryTime},
+            </if>
+            version = version + 1
+        </set>
+        <where>
+            <if test="order.id != null">
+                and= #{order.id}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="order.version != null">
+                and version = #{order.version}
+            </if>
+        </where>
+    </update>
+
     <resultMap id="orderVOResultMap" type="com.sky.vo.OrderVO">
         <!-- 映射订单基础字段 -->
         <id column="id" property="id"/>

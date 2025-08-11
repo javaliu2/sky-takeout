@@ -31,7 +31,7 @@ public class OrderTask {
                 order.setStatus(Orders.CANCELLED);
                 order.setCancelReason("支付超时，自动取消");
                 order.setCancelTime(LocalDateTime.now());
-                orderMapper.update(order);  // 更新的时候，要带上version判定和订单状态判定（只取消处于PENDING_PAYMENT状态的订单）
+                orderMapper.updateWithVersion(order, Orders.PENDING_PAYMENT);  // 更新的时候，要带上version判定和订单状态判定（只取消处于PENDING_PAYMENT状态的订单）
             });
         }
     }

@@ -5,6 +5,7 @@ import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
 import com.sky.vo.OrderVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
@@ -32,6 +33,7 @@ public interface OrderMapper {
      */
     void update(Orders orders);
 
+    void updateWithVersion(@Param("order") Orders orders, @Param("status") Integer status);
     @Select("select * from orders where status=#{status} and order_time < #{time}")
     List<Orders> getByStatusAndOrdertimeLT(Integer status, LocalDateTime time);
 
