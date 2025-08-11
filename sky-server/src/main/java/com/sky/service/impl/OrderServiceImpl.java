@@ -17,6 +17,7 @@ import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.*;
 import com.sky.websocket.WebSocketServer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,12 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -42,6 +41,8 @@ public class OrderServiceImpl implements OrderService {
     ShoppingCartMapper shoppingCartMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private CompensationLogMapper compensationLogMapper;
     @Autowired
     private WeChatPayUtil weChatPayUtil;
     @Autowired
@@ -160,7 +161,39 @@ public class OrderServiceImpl implements OrderService {
         data.put("content", "订单号：" + outTradeNo);
         webSocketServer.sendToAllClient(JSON.toJSONString(data));  // 通过websocket与client通信
 
-        orderMapper.updateWithVersion(orders, Orders.PENDING_PAYMENT);  // 这里更新也是，判定version和订单状态（是否是PENDING_PAYMENT状态）
+        int count = orderMapper.updateWithVersion(orders, Orders.PENDING_PAYMENT);  // 这里更新也是，判定version和订单状态（是否是PENDING_PAYMENT状态）
+        // 1、补偿更新（将订单状态从取消修改为已支付）
+        if (count == 0) { // 更新失败
+            Orders order1 = orderMapper.getByNumber(outTradeNo);
+            if (Objects.equals(order1.getStatus(), Orders.CANCELLED)) {
+                Orders order2 = Orders.builder()
+                        .id(order1.getId())
+                        .status(Orders.TO_BE_CONFIRMED)  // 超时取消订单操作的逆操作1（直接设置为'待商家接单'状态）
+                        .payStatus(Orders.PAID)
+                        .checkoutTime(LocalDateTime.now())
+                        .cancelTime(null)  // 超时取消订单操作的逆操作2
+                        .cancelReason("")  // 超时取消订单操作的逆操作3
+                        .build();
+                int updateCount = orderMapper.updateWithVersion(order2, Orders.CANCELLED);
+                // 2、日志记录
+                if (updateCount > 0) {
+                    // 系统日志
+                    log.warn("[订单补偿成功] 订单号={} 从 CANCELLED 改为 TO_BE_CONFIRMED 原因=超时取消逆操作",
+                            outTradeNo);
+                    // 业务日志
+                    compensationLogMapper.insert(CompensationLog.builder()
+                            .orderId(order1.getId())
+                            .beforeStatus("已取消")
+                            .afterStatus("待接单")
+                            .reason("超时取消逆操作")
+                            .operator("SYSTEM")
+                            .operateTime(LocalDateTime.now())
+                            .build());
+                } else {
+                    log.error("[订单补偿失败] 订单号={} 状态已被修改，无法补偿", outTradeNo);
+                }
+            }
+        }
     }
 
     /**

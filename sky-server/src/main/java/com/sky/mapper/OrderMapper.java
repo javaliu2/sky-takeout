@@ -33,7 +33,7 @@ public interface OrderMapper {
      */
     void update(Orders orders);
 
-    void updateWithVersion(@Param("order") Orders orders, @Param("status") Integer status);
+    int updateWithVersion(@Param("order") Orders orders, @Param("status") Integer status);
     @Select("select * from orders where status=#{status} and order_time < #{time}")
     List<Orders> getByStatusAndOrdertimeLT(Integer status, LocalDateTime time);
 
