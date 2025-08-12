@@ -1,22 +1,24 @@
 package com.sky.websocket;
 
+import com.sky.config.WebSocketConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import javax.websocket.OnClose;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
+
+import javax.websocket.*;
+import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
+import javax.websocket.server.ServerEndpointConfig;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * WebSocket服务
  */
 @Component
-@ServerEndpoint("/ws/{sid}")
+@ServerEndpoint(value = "/ws/{sid}", configurator = WebSocketConfiguration.class)
 @Slf4j
 public class WebSocketServer {
 
@@ -30,6 +32,22 @@ public class WebSocketServer {
     public void onOpen(Session session, @PathParam("sid") String sid) {
         log.info("[WebSocket]: 客户端：{}建立连接", sid);
         sessionMap.put(sid, session);
+
+        // 获取握手时存下的 HTTP 请求头
+        Map<String, Object> userProperties = session.getUserProperties();
+        @SuppressWarnings("unchecked")
+        Map<String, List<String>> headers = (Map<String, List<String>>) userProperties.get("headers");
+        if (headers != null) {
+            headers.forEach((k, v) -> log.info("{}: {}", k, v));
+        }
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+                sendToAllClient("hello from springboot application");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     /**

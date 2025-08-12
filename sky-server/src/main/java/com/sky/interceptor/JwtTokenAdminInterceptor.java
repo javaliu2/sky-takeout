@@ -12,6 +12,7 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * jwt令牌校验的拦截器
@@ -19,6 +20,8 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 @Slf4j
 public class JwtTokenAdminInterceptor implements HandlerInterceptor {
+//    private int count;  // 统计当前请求数量，出现了计数丢失的现象，因为count++在多线程场景下，不是原子操作
+    private final AtomicInteger count = new AtomicInteger();
 
     @Autowired
     private JwtProperties jwtProperties;
@@ -48,7 +51,8 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
             Claims claims = JwtUtil.parseJWT(jwtProperties.getAdminSecretKey(), token);
             Long empId = Long.valueOf(claims.get(JwtClaimsConstant.EMP_ID).toString());
             BaseContext.setCurrentId(empId);
-            log.info("当前员工id:{}", empId);
+            int count = this.count.incrementAndGet();
+            log.info("当前员工id:{}，当前请求数量:{}", empId, count);
             //3、通过，放行
             return true;
         } catch (Exception ex) {
@@ -61,6 +65,7 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         BaseContext.removeCurrentId();
-        log.info("清除ThreadLocal变量");
+        int count = this.count.decrementAndGet();
+        log.info("清除ThreadLocal变量，剩余请求数量:{}", count);
     }
 }
