@@ -43,7 +43,7 @@ public class WebSocketServer {
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
-                sendToAllClient("hello from springboot application");
+                sendToAllClient("{message: hello from springboot application}");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -77,6 +77,7 @@ public class WebSocketServer {
      * @param message
      */
     public void sendToAllClient(String message) {
+        log.info("服务端向客户端发送消息，message: {}", message);
         Collection<Session> sessions = sessionMap.values();
         for (Session session : sessions) {
             try {

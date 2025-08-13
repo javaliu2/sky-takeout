@@ -75,7 +75,7 @@
         </set>
         <where>
             <if test="order.id != null">
-                and= #{order.id}
+                and id = #{order.id}
             </if>
             <if test="status != null">
                 and status = #{status}
